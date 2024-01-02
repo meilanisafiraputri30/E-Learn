@@ -87,6 +87,31 @@ class TugasController extends Controller
             return back()->with('success', 'Berhasil menambahkan tugas baru');
     }
 
+    public function kirimTugas(Request $request)
+    {
+        $bukti = $request->file('bukti');
+        $file_name = time() . '_' . $bukti->getClientOriginalName();
+        $bukti->move(public_path('storage/bukti'), $file_name);
+
+        $pengumpulan = Pengumpulan::create([
+            'tugas_id' => $request->tugas_id,
+            'guru_id' => $request->guru,
+            'materi_id' => $request->materi_id,
+            'user_id' => Auth::user()->id,
+            'bukti' => $file_name,
+        ]);
+
+        // $guru = User::where('role', 'guru')->first();
+
+            Notifikasi::create([
+                'sender_id' => Auth::user()->id,
+                'user_id' => $request->guru,
+                'title' => Auth::user()->name,
+                'message' => Auth::user()->name . " mengumpulkan tugas" ,
+            ]);
+        return back()->with('success', 'berhasil mengirimkan tugas anda');
+    }
+
     public function editTugas($tugas_id)
     {
         $tugas = Tugas::findOrFail($tugas_id);
@@ -141,35 +166,12 @@ class TugasController extends Controller
         return back()->with('success', 'Berhasil mengupdate tugas');
     }
 
-    public function kirimTugas(Request $request)
-    {
-        $bukti = $request->file('bukti');
-        $file_name = time() . '_' . $bukti->getClientOriginalName();
-        $bukti->move(public_path('storage/bukti'), $file_name);
-
-        $pengumpulan = Pengumpulan::create([
-            'tugas_id' => $request->tugas_id,
-            'guru_id' => $request->guru,
-            'materi_id' => $request->materi_id,
-            'user_id' => Auth::user()->id,
-            'bukti' => $file_name,
-        ]);
-
-        // $guru = User::where('role', 'guru')->first();
-
-            Notifikasi::create([
-                'sender_id' => Auth::user()->id,
-                'user_id' => $request->guru,
-                'title' => Auth::user()->name,
-                'message' => Auth::user()->name . " mengumpulkan tugas" ,
-            ]);
-        return back()->with('success', 'berhasil mengirimkan tugas anda');
-    }
-
     public function deleteTugas($id)
     {
         $tugas = Tugas::findOrFail($id);
         $tugas->delete();
+
+        // Tambahkan logika jika diperlukan, misalnya memberikan notifikasi
 
         return back()->with('success', 'Berhasil menghapus tugas');
     }
