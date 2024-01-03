@@ -103,12 +103,13 @@ class GuruController extends Controller
     public function index(){
         $mengajukan = penarikansaldo::all();
         $saldo = pendapatan::all();
+        $guru = Guru::where('user_id', auth()->user()->id)->firstOrFail();
         $pendapatanguru = Pendapatan::all()->where('user_id', auth()->id());
         $pendapatan = $pendapatanguru->pluck('pendapatan')->sum();
         $Notifikasi = Notifikasi::where('user_id', Auth::user()->id)->whereNotIn('title', [Auth::user()->name])->orderBy('created_at', 'desc')->get();
         $unreadNotificationsCount = Notifikasi::where('user_id', Auth::user()->id)->whereNotIn('title', [Auth::user()->name])->where('markRead', false)->count();
 
-        return view('guru.pengajuansaldo', compact('mengajukan', 'saldo', 'pendapatan','Notifikasi', 'unreadNotificationsCount'));
+        return view('guru.pengajuansaldo', compact('mengajukan', 'saldo', 'pendapatan','Notifikasi', 'guru', 'unreadNotificationsCount'));
     }
 
     public function create(){
